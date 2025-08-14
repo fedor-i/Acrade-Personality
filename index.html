@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕹️ Retro Arcade Personality Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            border: 5px solid #333;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 0 #ff6b6b;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 0 #4ecdc4;
+        }
+
+        .retro-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border: 3px solid #333;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+        }
+
+        .retro-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .retro-button.secondary {
+            background: linear-gradient(45deg, #4ecdc4, #6ed3c7);
+        }
+
+        .retro-button.skip {
+            background: linear-gradient(45deg, #95a5a6, #b8c6c7);
+            font-size: 1em;
+            padding: 10px 20px;
+        }
+
+        input[type="text"], input[type="email"] {
+            border: 3px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1em;
+            margin: 10px;
+            width: 80%;
+            font-family: 'Courier New', monospace;
+        }
+
+        .player-id {
+            background: #333;
+            color: #4ecdc4;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 1.3em;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .game-canvas {
+            border: 5px solid #333;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: block;
+            background: #222;
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .customization-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .option {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #333;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .option:hover, .option.selected {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .persona-result {
+            background: linear-gradient(45deg, #ffd93d, #ff8c42);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 3px solid #333;
+        }
+
+        .progress-bar {
+            background: #ddd;
+            height: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .game-instructions {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Landing Screen -->
+        <div class="screen active" id="landing">
+            <h1>🕹️ RETRO ARCADE<br>PERSONALITY DETECTOR</h1>
+            <p style="font-size: 1.2em; margin: 20px 0; color: #666;">
+                Ready to discover your gaming personality? Play some mini-games and we'll reveal your secret arcade persona!
+            </p>
+            
+            <div class="player-id">
+                PLAYER ID: <span id="playerId"></span>
+            </div>
+            
+            <br>
+            <button class="retro-button" onclick="startGames()">🚀 START GAMES</button>
+        </div>
+
+        <!-- Game 1: Reaction Tap -->
+        <div class="screen" id="game1">
+            <h2>⚡ REACTION TAP</h2>
+            <div class="game-instructions">
+                Tap the screen when it turns GREEN! Don't tap on red!
+            </div>
+            <canvas id="reactionCanvas" class="game-canvas" width="400" height="300"></canvas>
+            <div class="score" id="reactionScore">Get Ready...</div>
+            <button class="retro-button secondary" onclick="startReactionGame()">START GAME</button>
+        </div>
+
+        <!-- Customization 1 -->
+        <div class="screen" id="custom1">
+            <h2>🎨 PICK YOUR VIBE</h2>
+            <p style="margin: 20px 0;">Choose your mood emoji for the next game!</p>
+            <div class="customization-options">
+                <div class="option" style="background: #ff6b6b;" onclick="selectCustomization('mood', '😎')" data-value="😎">😎</div>
+                <div class="option" style="background: #4ecdc4;" onclick="selectCustomization('mood', '🤪')" data-value="🤪">🤪</div>
+                <div class="option" style="background: #45b7d1;" onclick="selectCustomization('mood', '🔥')" data-value="🔥">🔥</div>
+                <div class="option" style="background: #96ceb4;" onclick="selectCustomization('mood', '✨')" data-value="✨">✨</div>
+            </div>
+            <button class="retro-button" onclick="nextScreen()" style="display: none;" id="custom1Next">CONTINUE</button>
+            <button class="retro-button skip" onclick="skipCustomization('mood')">SKIP THIS</button>
+        </div>
+
+        <!-- Game 2: Memory Match -->
+        <div class="screen" id="game2">
+            <h2>🧠 MEMORY MATCH</h2>
+            <div class="game-instructions">
+                Remember the pattern and click the squares in the same order!
+            </div>
+            <canvas id="memoryCanvas" class="game-canvas" width="400" height="400"></canvas>
+            <div class="score" id="memoryScore">Watch the pattern...</div>
+            <button class="retro-button secondary" onclick="startMemoryGame()">START GAME</button>
+        </div>
+
+        <!-- Customization 2 -->
+        <div class="screen" id="custom2">
+            <h2>🌈 CHOOSE YOUR THEME</h2>
+            <p style="margin: 20px 0;">Pick a color theme for the final game!</p>
+            <div class="customization-options">
+                <div class="option" style="background: #ff6b6b;" onclick="selectCustomization('theme', 'red')" data-value="red">🔴</div>
+                <div class="option" style="background: #4ecdc4;" onclick="selectCustomization('theme', 'teal')" data-value="teal">🟢</div>
+                <div class="option" style="background: #45b7d1;" onclick="selectCustomization('theme', 'blue')" data-value="blue">🔵</div>
+                <div class="option" style="background: #9b59b6;" onclick="selectCustomization('theme', 'purple')" data-value="purple">🟣</div>
+            </div>
+            <button class="retro-button" onclick="nextScreen()" style="display: none;" id="custom2Next">CONTINUE</button>
+            <button class="retro-button skip" onclick="skipCustomization('theme')">SKIP THIS</button>
+        </div>
+
+        <!-- Game 3: Snake Lite -->
+        <div class="screen" id="game3">
+            <h2>🐍 SNAKE LITE</h2>
+            <div class="game-instructions">
+                Use arrow keys to collect the food! Don't hit the walls!
+            </div>
+            <canvas id="snakeCanvas" class="game-canvas" width="400" height="400"></canvas>
+            <div class="score" id="snakeScore">Use arrow keys to move</div>
+            <button class="retro-button secondary" onclick="startSnakeGame()">START GAME</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="screen" id="results">
+            <h2>🎉 YOUR ARCADE PERSONALITY</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="persona-result" id="personaResult">
+                <!-- Results will be populated here -->
+            </div>
+            <button class="retro-button" onclick="restartApp()">🔄 PLAY AGAIN</button>
+            <button class="retro-button secondary" onclick="shareResults()">📱 SHARE RESULTS</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // TRACKING DATA & SESSION MANAGEMENT
+        // ==========================================
+        
+        let playerData = {
+            playerId: '',
+            email: '',
+            customizations: {},
+            customizationTimes: {},
+            skippedCustomizations: [],
+            gameScores: {},
+            gameReplays: {},
+            totalEngagementTime: 0,
+            sessionStart: Date.now()
+        };
+
+        let currentScreen = 0;
+        let screens = ['landing', 'game1', 'custom1', 'game2', 'custom2', 'game3', 'results'];
+        let currentCustomizationStart = 0;
+
+        // ==========================================
+        // DATA COLLECTION
+        // ==========================================
+        
+        const WEBHOOK_URL = 'https://hooks.airtable.com/workflows/v1/genericWebhook/appHZHcJ3hlmv59AV/wfl6BWBEikhoS2aYp/wtrrlsPF7aCEtqCWa';
+        
+        function collectData() {
+            const analysis = analyzePersonality();
+            
+            // Send data through our Netlify function proxy
+            const data = {
+                ts: new Date().toISOString(),
+                sid: generateSessionId(),
+                pid: playerData.playerId,
+                type: analysis.personality.name,
+                eng: analysis.scores.engagement,
+                cust: analysis.scores.customization,
+                spd: analysis.scores.speed,
+                perf: analysis.scores.gamePerformance,
+                time: analysis.stats.totalTime,
+                cc: analysis.stats.customizationsCompleted,
+                cs: analysis.stats.customizationsSkipped,
+                dt: analysis.stats.averageDecisionTime,
+                r: playerData.gameScores.reaction || 0,
+                m: playerData.gameScores.memory || 0,
+                s: playerData.gameScores.snake || 0,
+                mood: playerData.customizations.mood || 'skip',
+                theme: playerData.customizations.theme || 'skip',
+                ua: navigator.userAgent.substr(0, 100),
+                screen: `${window.screen.width}x${window.screen.height}`,
+                traits: analysis.personality.traits.join(', ')
+            };
+            
+            // Send to our Netlify function instead of directly to Airtable
+            fetch('/.netlify/functions/collect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                console.log('Data sent successfully');
+            }).catch(error => {
+                console.log('Data collection failed:', error);
+            });
+        }
+        
+        function generateSessionId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+        
+        function generatePlayerId() {
+            const adjectives = ['SUPER', 'MEGA', 'ULTRA', 'HYPER', 'TURBO', 'COSMIC', 'NEON', 'RETRO'];
+            const nouns = ['GAMER', 'PLAYER', 'HERO', 'CHAMPION', 'MASTER', 'LEGEND', 'WIZARD', 'NINJA'];
+            const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+            const noun = nouns[Math.floor(Math.random() * nouns.length)];
+            const num = Math.floor(Math.random() * 9999);
+            return `${adj}_${noun}_${num}`;
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function nextScreen() {
+            if (currentScreen < screens.length - 1) {
+                currentScreen++;
+                showScreen(screens[currentScreen]);
+                
+                // Start customization timer if it's a customization screen
+                if (screens[currentScreen].startsWith('custom')) {
+                    currentCustomizationStart = Date.now();
+                }
+            }
+        }
+
+        // ==========================================
+        // CUSTOMIZATION TRACKING
+        // ==========================================
+        
+        function selectCustomization(type, value) {
+            const decisionTime = Date.now() - currentCustomizationStart;
+            playerData.customizations[type] = value;
+            playerData.customizationTimes[type] = decisionTime;
+            
+            // Visual feedback
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Show continue button
+            document.getElementById(`custom${currentScreen === 2 ? '1' : '2'}Next`).style.display = 'inline-block';
+        }
+
+        function skipCustomization(type) {
+            const decisionTime = Date.now() - currentCustomizationStart;
+            playerData.skippedCustomizations.push(type);
+            playerData.customizationTimes[type] = decisionTime;
+            nextScreen();
+        }
+
+        // ==========================================
+        // GAME INITIALIZATION
+        // ==========================================
+        
+        function startGames() {
+            playerData.playerId = document.getElementById('playerId').textContent;
+            playerData.sessionStart = Date.now();
+            nextScreen();
+        }
+
+        // ==========================================
+        // GAME 1: REACTION TAP
+        // ==========================================
+        
+        let reactionGame = {
+            canvas: null,
+            ctx: null,
+            isGreen: false,
+            gameActive: false,
+            score: 0,
+            attempts: 0,
+            startTime: 0
+        };
+
+        function startReactionGame() {
+            reactionGame.canvas = document.getElementById('reactionCanvas');
+            reactionGame.ctx = reactionGame.canvas.getContext('2d');
+            reactionGame.score = 0;
+            reactionGame.attempts = 0;
+            reactionGame.gameActive = true;
+            
+            reactionGame.canvas.onclick = handleReactionClick;
+            
+            setTimeout(showGreenLight, Math.random() * 3000 + 1000);
+            updateReactionDisplay('Get ready... tap when GREEN!');
+            drawReactionGame('#ff6b6b'); // Red initially
+        }
+
+        function showGreenLight() {
+            if (!reactionGame.gameActive) return;
+            reactionGame.isGreen = true;
+            reactionGame.startTime = Date.now();
+            drawReactionGame('#4ecdc4'); // Green
+            updateReactionDisplay('TAP NOW!');
+        }
+
+        function handleReactionClick() {
+            if (!reactionGame.gameActive) return;
+            
+            reactionGame.attempts++;
+            
+            if (reactionGame.isGreen) {
+                const reactionTime = Date.now() - reactionGame.startTime;
+                reactionGame.score++;
+                updateReactionDisplay(`Great! ${reactionTime}ms reaction time!`);
+                reactionGame.isGreen = false;
+                
+                if (reactionGame.attempts < 3) {
+                    setTimeout(() => {
+                        drawReactionGame('#ff6b6b');
+                        setTimeout(showGreenLight, Math.random() * 2000 + 1000);
+                    }, 1000);
+                } else {
+                    endReactionGame();
+                }
+            } else {
+                updateReactionDisplay('Too early! Wait for GREEN!');
+                drawReactionGame('#ff6b6b');
+                setTimeout(showGreenLight, Math.random() * 2000 + 1000);
+            }
+        }
+
+        function drawReactionGame(color) {
+            reactionGame.ctx.fillStyle = color;
+            reactionGame.ctx.fillRect(0, 0, 400, 300);
+            reactionGame.ctx.fillStyle = '#fff';
+            reactionGame.ctx.font = '24px Courier New';
+            reactionGame.ctx.textAlign = 'center';
+            reactionGame.ctx.fillText('TAP ME!', 200, 150);
+        }
+
+        function updateReactionDisplay(text) {
+            document.getElementById('reactionScore').textContent = text;
+        }
+
+        function endReactionGame() {
+            reactionGame.gameActive = false;
+            playerData.gameScores.reaction = reactionGame.score;
+            updateReactionDisplay(`Final Score: ${reactionGame.score}/3 - Click CONTINUE!`);
+            setTimeout(() => {
+                document.querySelector('#game1 .retro-button').textContent = 'CONTINUE';
+                document.querySelector('#game1 .retro-button').onclick = nextScreen;
+            }, 1000);
+        }
+
+        // ==========================================
+        // GAME 2: MEMORY MATCH
+        // ==========================================
+        
+        let memoryGame = {
+            canvas: null,
+            ctx: null,
+            sequence: [],
+            playerSequence: [],
+            currentStep: 0,
+            gameActive: false,
+            showingPattern: false,
+            score: 0,
+            gridSize: 3
+        };
+
+        function startMemoryGame() {
+            memoryGame.canvas = document.getElementById('memoryCanvas');
+            memoryGame.ctx = memoryGame.canvas.getContext('2d');
+            memoryGame.sequence = [];
+            memoryGame.playerSequence = [];
+            memoryGame.currentStep = 0;
+            memoryGame.score = 0;
+            memoryGame.gameActive = true;
+            
+            memoryGame.canvas.onclick = handleMemoryClick;
+            
+            // Generate sequence of 4 positions
+            for (let i = 0; i < 4; i++) {
+                memoryGame.sequence.push(Math.floor(Math.random() * 9));
+            }
+            
+            showMemoryPattern();
+        }
+
+        function showMemoryPattern() {
+            memoryGame.showingPattern = true;
+            updateMemoryDisplay('Watch the pattern...');
+            
+            let step = 0;
+            const showNext = () => {
+                drawMemoryGrid();
+                if (step < memoryGame.sequence.length) {
+                    highlightMemorySquare(memoryGame.sequence[step]);
+                    step++;
+                    setTimeout(() => {
+                        drawMemoryGrid();
+                        setTimeout(showNext, 300);
+                    }, 600);
+                } else {
+                    memoryGame.showingPattern = false;
+                    updateMemoryDisplay('Now click the squares in the same order!');
+                }
+            };
+            
+            setTimeout(showNext, 1000);
+        }
+
+        function drawMemoryGrid() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#f7dc6f', '#bb8fce', '#f1948a', '#82e0aa', '#85c1e9'];
+            
+            for (let i = 0; i < 9; i++) {
+                const row = Math.floor(i / 3);
+                const col = i % 3;
+                const x = col * 130 + 10;
+                const y = row * 130 + 10;
+                
+                memoryGame.ctx.fillStyle = colors[i];
+                memoryGame.ctx.fillRect(x, y, 120, 120);
+                memoryGame.ctx.strokeStyle = '#333';
+                memoryGame.ctx.lineWidth = 3;
+                memoryGame.ctx.strokeRect(x, y, 120, 120);
+            }
+        }
+
+        function highlightMemorySquare(index) {
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+            const x = col * 130 + 10;
+            const y = row * 130 + 10;
+            
+            memoryGame.ctx.fillStyle = '#fff';
+            memoryGame.ctx.fillRect(x + 10, y + 10, 100, 100);
+        }
+
+        function handleMemoryClick(event) {
+            if (!memoryGame.gameActive || memoryGame.showingPattern) return;
+            
+            const rect = memoryGame.canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const col = Math.floor(x / 130);
+            const row = Math.floor(y / 130);
+            const clickedIndex = row * 3 + col;
+            
+            if (clickedIndex >= 0 && clickedIndex < 9) {
+                memoryGame.playerSequence.push(clickedIndex);
+                
+                // Check if correct
+                const currentIndex = memoryGame.playerSequence.length - 1;
+                if (memoryGame.playerSequence[currentIndex] === memoryGame.sequence[currentIndex]) {
+                    if (memoryGame.playerSequence.length === memoryGame.sequence.length) {
+                        memoryGame.score = memoryGame.sequence.length;
+                        endMemoryGame();
+                    } else {
+                        updateMemoryDisplay(`Correct! ${memoryGame.playerSequence.length}/${memoryGame.sequence.length}`);
+                    }
+                } else {
+                    memoryGame.score = memoryGame.playerSequence.length - 1;
+                    endMemoryGame();
+                }
+            }
+        }
+
+        function updateMemoryDisplay(text) {
+            document.getElementById('memoryScore').textContent = text;
+        }
+
+        function endMemoryGame() {
+            memoryGame.gameActive = false;
+            playerData.gameScores.memory = memoryGame.score;
+            updateMemoryDisplay(`Final Score: ${memoryGame.score}/4 - Click CONTINUE!`);
+            setTimeout(() => {
+                document.querySelector('#game2 .retro-button').textContent = 'CONTINUE';
+                document.querySelector('#game2 .retro-button').onclick = nextScreen;
+            }, 1000);
+        }
+
+        // ==========================================
+        // GAME 3: SNAKE LITE (FIXED VERSION)
+        // ==========================================
+        
+        let snakeGame = {
+            canvas: null,
+            ctx: null,
+            snake: [{x: 10, y: 10}],
+            food: {x: 5, y: 5},
+            direction: {x: 0, y: 0},
+            gameActive: false,
+            score: 0,
+            gridSize: 20,
+            gameInterval: null
+        };
+
+        function startSnakeGame() {
+            // Reset everything
+            snakeGame.canvas = document.getElementById('snakeCanvas');
+            snakeGame.ctx = snakeGame.canvas.getContext('2d');
+            snakeGame.snake = [{x: 10, y: 10}];
+            snakeGame.direction = {x: 0, y: 0};
+            snakeGame.score = 0;
+            snakeGame.gameActive = true;
+            snakeGame.gameInterval = null;
+            
+            // Clear any existing event listeners
+            document.removeEventListener('keydown', handleSnakeKeydown);
+            document.addEventListener('keydown', handleSnakeKeydown);
+            
+            generateSnakeFood();
+            drawSnakeGame();
+            updateSnakeDisplay('Use arrow keys to move! Game starts when you press an arrow.');
+        }
+
+        function generateSnakeFood() {
+            snakeGame.food = {
+                x: Math.floor(Math.random() * 20),
+                y: Math.floor(Math.random() * 20)
+            };
+            
+            // Make sure food doesn't spawn on snake
+            for (let segment of snakeGame.snake) {
+                if (segment.x === snakeGame.food.x && segment.y === snakeGame.food.y) {
+                    generateSnakeFood(); // Try again
+                    return;
+                }
+            }
+        }
+
+        function handleSnakeKeydown(event) {
+            if (!snakeGame.gameActive) return;
+            
+            event.preventDefault(); // Prevent scrolling
+            
+            let newDirection = snakeGame.direction;
+            
+            switch(event.key) {
+                case 'ArrowUp':
+                    if (snakeGame.direction.y === 0) newDirection = {x: 0, y: -1};
+                    break;
+                case 'ArrowDown':
+                    if (snakeGame.direction.y === 0) newDirection = {x: 0, y: 1};
+                    break;
+                case 'ArrowLeft':
+                    if (snakeGame.direction.x === 0) newDirection = {x: -1, y: 0};
+                    break;
+                case 'ArrowRight':
+                    if (snakeGame.direction.x === 0) newDirection = {x: 1, y: 0};
+                    break;
+                default:
+                    return;
+            }
+            
+            snakeGame.direction = newDirection;
+            
+            // Start game loop if not already running
+            if (!snakeGame.gameInterval) {
+                snakeGame.gameInterval = setInterval(updateSnakeGame, 200);
+                updateSnakeDisplay(`Score: ${snakeGame.score} - Use arrow keys!`);
+            }
+        }
+
+        function updateSnakeGame() {
+            if (!snakeGame.gameActive) {
+                clearInterval(snakeGame.gameInterval);
+                return;
+            }
+            
+            // Calculate new head position
+            const head = {
+                x: snakeGame.snake[0].x + snakeGame.direction.x,
+                y: snakeGame.snake[0].y + snakeGame.direction.y
+            };
+            
+            // Check wall collision
+            if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) {
+                endSnakeGame();
+                return;
+            }
+            
+            // Check self collision
+            for (let segment of snakeGame.snake) {
+                if (head.x === segment.x && head.y === segment.y) {
+                    endSnakeGame();
+                    return;
+                }
+            }
+            
+            // Add new head
+            snakeGame.snake.unshift(head);
+            
+            // Check food collision
+            if (head.x === snakeGame.food.x && head.y === snakeGame.food.y) {
+                snakeGame.score++;
+                updateSnakeDisplay(`Score: ${snakeGame.score} - Great job!`);
+                generateSnakeFood();
+            } else {
+                // Remove tail if no food eaten
+                snakeGame.snake.pop();
+            }
+            
+            drawSnakeGame();
+        }
+
+        function drawSnakeGame() {
+            // Clear canvas
+            snakeGame.ctx.fillStyle = '#222';
+            snakeGame.ctx.fillRect(0, 0, 400, 400);
+            
+            // Choose snake color based on theme
+            let snakeColor = '#4ecdc4'; // Default
+            if (playerData.customizations.theme === 'red') snakeColor = '#ff6b6b';
+            else if (playerData.customizations.theme === 'blue') snakeColor = '#45b7d1';
+            else if (playerData.customizations.theme === 'purple') snakeColor = '#9b59b6';
+            
+            // Draw snake
+            snakeGame.ctx.fillStyle = snakeColor;
+            for (let segment of snakeGame.snake) {
+                snakeGame.ctx.fillRect(segment.x * 20, segment.y * 20, 18, 18);
+            }
+            
+            // Draw food
+            snakeGame.ctx.fillStyle = '#ffd93d';
+            snakeGame.ctx.fillRect(snakeGame.food.x * 20, snakeGame.food.y * 20, 18, 18);
+        }
+
+        function updateSnakeDisplay(text) {
+            document.getElementById('snakeScore').textContent = text;
+        }
+
+        function endSnakeGame() {
+            snakeGame.gameActive = false;
+            if (snakeGame.gameInterval) {
+                clearInterval(snakeGame.gameInterval);
+                snakeGame.gameInterval = null;
+            }
+            
+            playerData.gameScores.snake = snakeGame.score;
+            document.removeEventListener('keydown', handleSnakeKeydown);
+            
+            updateSnakeDisplay(`Game Over! Final Score: ${snakeGame.score} - Click CONTINUE!`);
+            
+            setTimeout(() => {
+                document.querySelector('#game3 .retro-button').textContent = 'CONTINUE';
+                document.querySelector('#game3 .retro-button').onclick = showResults;
+            }, 1000);
+        }
+
+        // ==========================================
+        // PERSONALITY ANALYSIS
+        // ==========================================
+        
+        function analyzePersonality() {
+            const totalTime = Date.now() - playerData.sessionStart;
+            playerData.totalEngagementTime = totalTime;
+            
+            // Calculate metrics
+            const totalCustomizations = Object.keys(playerData.customizations).length;
+            const customizationScore = (totalCustomizations / 2) * 100;
+            
+            const decisionTimes = Object.values(playerData.customizationTimes);
+            const avgDecisionTime = decisionTimes.length > 0 ? 
+                decisionTimes.reduce((a, b) => a + b, 0) / decisionTimes.length : 5000;
+            const speedScore = Math.max(0, Math.min(100, 100 - (avgDecisionTime / 100)));
+            
+            const gameScoreTotal = Object.values(playerData.gameScores).reduce((a, b) => a + b, 0);
+            const maxPossibleScore = 3 + 4 + 10;
+            const gamePerformanceScore = Math.min(100, (gameScoreTotal / maxPossibleScore) * 100);
+            
+            const engagementScore = (
+                customizationScore * 0.4 +
+                speedScore * 0.3 +
+                gamePerformanceScore * 0.3
+            );
+            
+            // Determine personality type
+            let personalityType;
+            
+            if (customizationScore >= 100 && speedScore >= 60) {
+                personalityType = {
+                    name: "⚡ SPEEDY STRATEGIST",
+                    description: "You're quick to engage and love diving into details! You make fast decisions and aren't afraid to customize your experience. You probably finish Netflix series in one sitting.",
+                    traits: ["Quick decision maker", "Loves customization", "High engagement", "Detail-oriented"]
+                };
+            } else if (customizationScore >= 50 && avgDecisionTime > 3000) {
+                personalityType = {
+                    name: "🎨 THOUGHTFUL CURATOR",
+                    description: "You take your time to make the perfect choices! You appreciate customization and think through your options. You probably have a perfectly organized Spotify playlist.",
+                    traits: ["Thoughtful chooser", "Values personalization", "Quality over speed", "Creative spirit"]
+                };
+            } else if (playerData.skippedCustomizations.length >= 1) {
+                personalityType = {
+                    name: "🚀 EFFICIENT EXPLORER",
+                    description: "You're here for the action, not the accessories! You skip the fluff and get straight to the fun. You probably close popup ads before they finish loading.",
+                    traits: ["Action-focused", "Efficiency lover", "Gets to the point", "No-nonsense attitude"]
+                };
+            } else {
+                personalityType = {
+                    name: "😎 CHILL ADVENTURER", 
+                    description: "You go with the flow and enjoy the journey! You're balanced in your approach - not too fast, not too slow. You probably have the perfect work-life balance everyone envies.",
+                    traits: ["Balanced approach", "Go with the flow", "Enjoys the process", "Laid-back winner"]
+                };
+            }
+            
+            return {
+                personality: personalityType,
+                scores: {
+                    engagement: Math.round(engagementScore),
+                    customization: Math.round(customizationScore),
+                    speed: Math.round(speedScore),
+                    gamePerformance: Math.round(gamePerformanceScore)
+                },
+                stats: {
+                    totalTime: Math.round(totalTime / 1000),
+                    customizationsCompleted: totalCustomizations,
+                    customizationsSkipped: playerData.skippedCustomizations.length,
+                    averageDecisionTime: Math.round(avgDecisionTime / 1000),
+                    totalGameScore: gameScoreTotal
+                }
+            };
+        }
+
+        // ==========================================
+        // RESULTS & SHARING
+        // ==========================================
+        
+        function showResults() {
+            const analysis = analyzePersonality();
+            
+            // 🔥 COLLECT DATA HERE - This runs when user completes the experience
+            collectData();
+            
+            // Update progress bar
+            document.getElementById('progressFill').style.width = analysis.scores.engagement + '%';
+            
+            // Display personality result
+            const resultDiv = document.getElementById('personaResult');
+            resultDiv.innerHTML = `
+                <h3 style="margin-bottom: 15px; font-size: 1.8em;">${analysis.personality.name}</h3>
+                <p style="font-size: 1.1em; margin-bottom: 20px; line-height: 1.6;">${analysis.personality.description}</p>
+                
+                <div style="text-align: left; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <strong>Your Traits:</strong><br>
+                    ${analysis.personality.traits.map(trait => `• ${trait}`).join('<br>')}
+                </div>
+            `;
+            
+            nextScreen();
+        }
+
+        function shareResults() {
+            const analysis = analyzePersonality();
+            
+            // Create simple share text (no complex URL encoding)
+            const shareText = `🕹️ I just discovered my arcade personality: ${analysis.personality.name}!
+
+${analysis.personality.description.split('.')[0]}.
+
+My traits: ${analysis.personality.traits.join(', ')}
+
+🎮 Try the Retro Arcade Personality Detector and find your gaming persona!
+${window.location.href.split('?')[0]}`;
+
+            // Try native sharing first
+            if (navigator.share && navigator.canShare && navigator.canShare({ text: shareText })) {
+                navigator.share({
+                    title: `My Arcade Personality: ${analysis.personality.name}`,
+                    text: shareText
+                }).catch(() => {
+                    // Fallback if native sharing fails
+                    copyToClipboard(shareText);
+                });
+            } else {
+                // Fallback for browsers without native sharing
+                copyToClipboard(shareText);
+            }
+        }
+        
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showShareSuccess('Results copied to clipboard! 📋 Paste anywhere to share.');
+                }).catch(() => {
+                    // Final fallback - show the text in a popup
+                    showSharePopup(text);
+                });
+            } else {
+                // Fallback for older browsers
+                showSharePopup(text);
+            }
+        }
+        
+        function showShareSuccess(message) {
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                background: #4ecdc4; color: white; padding: 15px 25px;
+                border-radius: 10px; z-index: 1000; font-weight: bold;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            `;
+            popup.textContent = message;
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                popup.remove();
+            }, 3000);
+        }
+        
+        function showSharePopup(text) {
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: white; border: 3px solid #333; border-radius: 15px;
+                padding: 20px; max-width: 500px; z-index: 1000;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+                font-family: 'Courier New', monospace;
+            `;
+            
+            popup.innerHTML = `
+                <h3 style="margin-top: 0;">📱 Share Your Results</h3>
+                <textarea style="width: 100%; height: 150px; padding: 10px; border: 2px solid #333; border-radius: 5px; font-family: inherit; resize: none;" onclick="this.select()">${text}</textarea>
+                <p style="margin: 10px 0; color: #666; font-size: 14px;">Copy the text above and share it anywhere!</p>
+                <button onclick="this.parentElement.remove()" style="
+                    background: #ff6b6b; color: white; border: none; padding: 10px 20px;
+                    border-radius: 5px; cursor: pointer; font-weight: bold;
+                ">Close</button>
+            `;
+            
+            document.body.appendChild(popup);
+        }
+        
+        function generateShareableUrl(data) {
+            // Create a clean version without emojis for URL encoding
+            const cleanData = {
+                ...data,
+                personalityType: data.personalityType.replace(/[^\w\s]/g, ''), // Remove emojis and special chars
+            };
+            
+            const baseUrl = window.location.href.split('?')[0];
+            try {
+                const encodedData = btoa(encodeURIComponent(JSON.stringify(cleanData)));
+                return `${baseUrl}?results=${encodedData}`;
+            } catch (error) {
+                // Fallback if encoding still fails
+                return baseUrl;
+            }
+        }
+        
+        function showShareDataPopup(data, shareUrl) {
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: white; border: 3px solid #333; border-radius: 15px;
+                padding: 20px; max-width: 500px; z-index: 1000;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+                font-family: 'Courier New', monospace;
+            `;
+            
+            popup.innerHTML = `
+                <h3 style="margin-top: 0;">📊 Your Shareable Results</h3>
+                <p><strong>Personality:</strong> ${data.personalityType}</p>
+                <p><strong>Engagement Score:</strong> ${data.scores.engagement}%</p>
+                <p><strong>Game Scores:</strong> R:${data.gameBreakdown.reaction} M:${data.gameBreakdown.memory} S:${data.gameBreakdown.snake}</p>
+                <p><strong>Pattern:</strong> ${data.engagementPattern}</p>
+                <hr>
+                <p><strong>Share URL:</strong></p>
+                <input type="text" value="${shareUrl}" style="width: 100%; padding: 5px; font-size: 12px;" onclick="this.select()">
+                <hr>
+                <button onclick="this.parentElement.remove()" style="
+                    background: #ff6b6b; color: white; border: none; padding: 10px 20px;
+                    border-radius: 5px; cursor: pointer; margin-top: 10px;
+                ">Close</button>
+            `;
+            
+            document.body.appendChild(popup);
+        }
+        
+        // Add function to load shared results if URL has results parameter
+        function loadSharedResults() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const resultsParam = urlParams.get('results');
+            
+            if (resultsParam) {
+                try {
+                    const sharedData = JSON.parse(decodeURIComponent(atob(resultsParam)));
+                    displaySharedResults(sharedData);
+                } catch (e) {
+                    console.log('Invalid shared results data');
+                }
+            }
+        }
+        
+        function displaySharedResults(sharedData) {
+            // Create a special shared results screen
+            const sharedScreen = document.createElement('div');
+            sharedScreen.className = 'screen active';
+            sharedScreen.innerHTML = `
+                <h2>📊 SHARED RESULTS</h2>
+                <div class="persona-result">
+                    <h3>${sharedData.personalityType}</h3>
+                    <p>${sharedData.description}</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0;">
+                        <div style="background: rgba(255,255,255,0.3); padding: 15px; border-radius: 10px;">
+                            <strong>Engagement</strong><br>
+                            <span style="font-size: 2em; color: #333;">${sharedData.scores.engagement}%</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.3); padding: 15px; border-radius: 10px;">
+                            <strong>Pattern</strong><br>
+                            <span style="font-size: 1.2em; color: #333;">${sharedData.engagementPattern}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: left; background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
+                        <strong>Game Scores:</strong><br>
+                        • Reaction Tap: ${sharedData.gameBreakdown.reaction}/3<br>
+                        • Memory Match: ${sharedData.gameBreakdown.memory}/4<br>
+                        • Snake: ${sharedData.gameBreakdown.snake} points
+                    </div>
+                    
+                    <div style="font-size: 0.9em; color: #666; margin-top: 15px;">
+                        Player: ${sharedData.playerId} • ${sharedData.timestamp}
+                    </div>
+                </div>
+                
+                <button class="retro-button" onclick="startNewGame()">🎮 TAKE THE TEST</button>
+                <button class="retro-button secondary" onclick="window.location.href = window.location.href.split('?')[0]">🏠 HOME</button>
+            `;
+            
+            // Hide other screens and show shared results
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelector('.container').appendChild(sharedScreen);
+        }
+        
+        function startNewGame() {
+            // Remove shared results screen and start fresh
+            const sharedScreen = document.querySelector('.container > .screen:last-child');
+            if (sharedScreen) sharedScreen.remove();
+            
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Start normal game
+            restartApp();
+        }
+        
+        // Optional: Download data as CSV for manual collection
+        function downloadDataAsCSV() {
+            const analysis = analyzePersonality();
+            const csvData = [
+                ['Field', 'Value'],
+                ['Timestamp', new Date().toISOString()],
+                ['Player ID', playerData.playerId],
+                ['Email', playerData.email],
+                ['Personality Type', analysis.personality.name],
+                ['Engagement Score', analysis.scores.engagement],
+                ['Customization Score', analysis.scores.customization],
+                ['Speed Score', analysis.scores.speed],
+                ['Total Time (seconds)', analysis.stats.totalTime],
+                ['Customizations Completed', analysis.stats.customizationsCompleted],
+                ['Customizations Skipped', analysis.stats.customizationsSkipped],
+                ['Average Decision Time (seconds)', analysis.stats.averageDecisionTime],
+                ['Total Game Score', analysis.stats.totalGameScore],
+                ['Reaction Game Score', playerData.gameScores.reaction || 0],
+                ['Memory Game Score', playerData.gameScores.memory || 0],
+                ['Snake Game Score', playerData.gameScores.snake || 0],
+                ['Mood Selection', playerData.customizations.mood || 'skipped'],
+                ['Theme Selection', playerData.customizations.theme || 'skipped']
+            ];
+            
+            const csvContent = csvData.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `arcade-data-${playerData.playerId}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function restartApp() {
+            // Reset all data
+            playerData = {
+                playerId: '',
+                customizations: {},
+                customizationTimes: {},
+                skippedCustomizations: [],
+                gameScores: {},
+                gameReplays: {},
+                totalEngagementTime: 0,
+                sessionStart: Date.now()
+            };
+            
+            currentScreen = 0;
+            snakeGameLoopRunning = false; // Reset snake game loop
+            
+            // Reset UI elements
+            document.getElementById('playerId').textContent = generatePlayerId();
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('#custom1Next, #custom2Next').forEach(btn => btn.style.display = 'none');
+            
+            // Reset game buttons
+            document.querySelector('#game1 .retro-button').textContent = 'START GAME';
+            document.querySelector('#game1 .retro-button').onclick = startReactionGame;
+            document.querySelector('#game2 .retro-button').textContent = 'START GAME';
+            document.querySelector('#game2 .retro-button').onclick = startMemoryGame;
+            document.querySelector('#game3 .retro-button').textContent = 'START GAME';
+            document.querySelector('#game3 .retro-button').onclick = startSnakeGame;
+            
+            // Reset displays
+            document.getElementById('reactionScore').textContent = 'Get Ready...';
+            document.getElementById('memoryScore').textContent = 'Watch the pattern...';
+            document.getElementById('snakeScore').textContent = 'Use arrow keys to move';
+            document.getElementById('progressFill').style.width = '0%';
+            
+            showScreen('landing');
+        }
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('playerId').textContent = generatePlayerId();
+            
+            // Check if this is a shared results link
+            loadSharedResults();
+        });
+
+        /*
+        ==========================================
+        CUSTOMIZATION GUIDE
+        ==========================================
+        
+        🎮 TO ADD GAMES:
+        1. Create game object (like reactionGame, memoryGame, snakeGame)
+        2. Add screen div with unique ID
+        3. Add screen ID to 'screens' array
+        4. Implement start/handle/end functions
+        5. Store score in playerData.gameScores
+        
+        🎨 TO ADD CUSTOMIZATIONS:
+        1. Add customization screen div
+        2. Add to 'screens' array
+        3. Create selectCustomization() calls
+        4. Data tracked automatically
+        
+        🧠 TO MODIFY PERSONALITIES:
+        1. Edit analyzePersonality() function
+        2. Add scoring criteria
+        3. Create new personality types
+        4. Each needs: name, description, traits
+        */
+    </script>
+</body>
+</html>
