@@ -1,5 +1,3 @@
-const fetch = require('node-fetch');
-
 exports.handler = async (event, context) => {
   // Add CORS headers for preflight requests
   if (event.httpMethod === 'OPTIONS') {
@@ -24,6 +22,7 @@ exports.handler = async (event, context) => {
   try {
     const gameData = JSON.parse(event.body);
     
+    // Use built-in fetch (no need for node-fetch)
     const response = await fetch('https://hooks.airtable.com/workflows/v1/genericWebhook/appHZHcJ3hlmv59AV/wfl6BWBEikhoS2aYp/wtrrlsPF7aCEtqCWa', {
       method: 'POST',
       headers: {
